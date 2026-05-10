@@ -8,21 +8,42 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class Pong extends JPanel {
+    private static final Pong INSTANCE = new Pong();
     private static final int TABLE_WIDTH = 500;
     @Getter
     private static final int TABLE_HEIGHT = 300;
     private static final int TABLE_X = 20;
     @Getter
     private static final int TABLE_Y = 20;
+    public static final int TABLE_CENTRE_Y = TABLE_Y + TABLE_HEIGHT / 2;
     private static final int TABLE_CENTRE_X = TABLE_X + TABLE_WIDTH / 2;
     private static final int PADDLE_X_OFFSET = 20;
     private static final int PADDLE_WIDTH = 10;
     @Getter
     private static final int PADDLE_HEIGHT = 50;
+    private static final int BALL_RADIUS = 5;
 
     @Setter
     @Getter
-    private int playerPaddleY  = TABLE_Y + TABLE_HEIGHT / 2 - PADDLE_HEIGHT / 2;
+    private int playerPaddleY = TABLE_CENTRE_Y - PADDLE_HEIGHT / 2;
+
+    @Getter
+    @Setter
+    private int ballX = TABLE_CENTRE_X - BALL_RADIUS;
+    @Getter
+    @Setter
+    private int ballY = TABLE_CENTRE_Y - BALL_RADIUS;
+    @Getter
+    @Setter
+    private boolean ballMovingLeft = true;
+    @Getter
+    @Setter
+    private boolean ballMovingUp = true;
+
+
+    private Pong() {
+        super();
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
@@ -32,6 +53,7 @@ public class Pong extends JPanel {
         g.drawLine(TABLE_CENTRE_X, TABLE_Y, TABLE_CENTRE_X, TABLE_Y + TABLE_HEIGHT);
         g.fillRect(TABLE_X + PADDLE_X_OFFSET, playerPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
         g.fillRect(TABLE_X + TABLE_WIDTH - PADDLE_X_OFFSET - PADDLE_WIDTH, TABLE_Y + TABLE_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+        g.fillOval(ballX, ballY, BALL_RADIUS * 2, BALL_RADIUS * 2);
     }
 
     @Override
@@ -41,11 +63,12 @@ public class Pong extends JPanel {
     }
 
     private static void createAndShowGui() {
+        System.out.println("Creating GUI on event dispatching thread");
 //        TODO: have initial menu screen --> set controls and colours, start game
         JFrame frame = new JFrame("DrawRect");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        Pong pong = new Pong();
+        Pong pong = Pong.INSTANCE;
         MoveAction up = new MoveAction(pong, true);
         MoveAction down = new MoveAction(pong, false);
 
@@ -63,6 +86,32 @@ public class Pong extends JPanel {
     }
 
     public static void main(String[] args) {
-            SwingUtilities.invokeLater(Pong::createAndShowGui);
+        SwingUtilities.invokeLater(Pong::createAndShowGui);
+        while (true) {
+                try {
+
+                    Pong pong = Pong.INSTANCE;
+                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -1 : 1));
+                    pong.repaint();
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+//        SwingUtilities.invokeLater(() -> {
+//            Having anything in another invoke Later thread causes the GUI to not render anything
+//            System.out.println("Starting ball on event dispatching thread");
+//            while (true) {
+//                try {
+//
+//                    Pong pong = Pong.INSTANCE;
+//                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -1 : 1));
+//                    pong.repaint();
+//                    Thread.sleep(1000);
+//                } catch (InterruptedException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 }

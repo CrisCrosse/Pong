@@ -1,5 +1,6 @@
 package org.example;
 
+import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
@@ -7,30 +8,31 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 @Setter
+@Getter
 public class DrawRect extends JPanel {
-    public int x;
-    public int y;
-    public int width;
-    public int height;
+    private int rectX;
+    private int rectY;
+    private int rectWidth;
+    private int rectHeight;
 
-    DrawRect(int x, int y, int width, int height) {
-        this.x = x;
-        this.y = y;
-        this.width = width;
-        this.height = height;
+    DrawRect(int rectX, int rectY, int rectWidth, int rectHeight) {
+        this.rectX = rectX;
+        this.rectY = rectY;
+        this.rectWidth = rectWidth;
+        this.rectHeight = rectHeight;
         this.addKeyListener(new RectangleReDrawerKeyListener(this));
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
-        g.drawRect(x, y, width, height);
+        g.drawRect(rectX, rectY, rectWidth, rectHeight);
     }
 
     @Override
     public Dimension getPreferredSize() {
         // so that our GUI is big enough
-        return new Dimension(width + 2 * x, height + 2 * y);
+        return new Dimension(rectWidth + 2 * rectX, rectHeight + 2 * rectY);
     }
 
     private static void createAndShowGui() {

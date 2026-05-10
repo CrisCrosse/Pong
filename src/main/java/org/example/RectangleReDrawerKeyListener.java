@@ -17,11 +17,11 @@ public class RectangleReDrawerKeyListener implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_UP) {
-            rectangle.y = rectangle.y - 1;
+            rectangle.setRectY(rectangle.getRectY() - 1);
             rectangle.repaint();
         }
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            rectangle.y = rectangle.y + 1;
+            rectangle.setRectY(rectangle.getRectY() + 1);
             rectangle.repaint();
         }
     }

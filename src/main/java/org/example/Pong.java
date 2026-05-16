@@ -125,7 +125,7 @@ public class Pong extends JPanel {
                     int ballLowerEdge = pong.getBallY() + BALL_RADIUS * 2;
                     if (ballLowerEdge > maxY) {
                         System.out.println("Ball collided with bottom edge of game board");
-                        pong.setBallY(maxY);
+                        pong.setBallY(maxY - BALL_RADIUS * 2);
                         pong.reverseBallYMovement();
                     }
                     if (pong.getBallX() < minX) {
@@ -136,7 +136,7 @@ public class Pong extends JPanel {
                     int ballRightEdge = pong.getBallX() + BALL_RADIUS * 2;
                     if (ballRightEdge > maxX) {
                         System.out.println("Ball collided with right edge of game board");
-                        pong.setBallX(maxX);
+                        pong.setBallX(maxX - BALL_RADIUS * 2);
                         pong.reverseBallXMovement();
                     }
 

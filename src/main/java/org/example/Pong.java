@@ -9,9 +9,11 @@ import java.awt.event.KeyEvent;
 
 public class Pong extends JPanel {
     private static final Pong INSTANCE = new Pong();
+    @Getter
     private static final int TABLE_WIDTH = 500;
     @Getter
     private static final int TABLE_HEIGHT = 300;
+    @Getter
     private static final int TABLE_X = 20;
     @Getter
     private static final int TABLE_Y = 20;
@@ -53,6 +55,7 @@ public class Pong extends JPanel {
         g.drawLine(TABLE_CENTRE_X, TABLE_Y, TABLE_CENTRE_X, TABLE_Y + TABLE_HEIGHT);
         g.fillRect(TABLE_X + PADDLE_X_OFFSET, playerPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
         g.fillRect(TABLE_X + TABLE_WIDTH - PADDLE_X_OFFSET - PADDLE_WIDTH, TABLE_Y + TABLE_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
+//        TODO: randomly place initial ball Y on centre line
         g.fillOval(ballX, ballY, BALL_RADIUS * 2, BALL_RADIUS * 2);
     }
 
@@ -85,33 +88,64 @@ public class Pong extends JPanel {
         frame.setVisible(true);
     }
 
+    private void reverseBallXMovement() {
+        this.setBallMovingLeft(!this.isBallMovingLeft());
+    }
+
+    private void reverseBallYMovement() {
+        this.setBallMovingUp(!this.isBallMovingUp());
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Pong::createAndShowGui);
         while (true) {
                 try {
 
                     Pong pong = Pong.INSTANCE;
-                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -1 : 1));
+//                    detect collisions + change movement directions
+//                    collision with edges of board
+//                     top and bottom = reverse Y direction
+//                    left and right = add to score --> implement later, need a placeholder for now
+//                    collisions with player paddle --> reverse X direction
+//
+                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -20 : 20));
+                    pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -20 : 20));
+//                    if after projected movement we intersect then reduce movement to adjacent and reverse direction
+                    int minY = getTABLE_Y();
+                    int maxY = minY + getTABLE_HEIGHT();
+                    int minX = getTABLE_X();
+                    int maxX = getTABLE_X() + getTABLE_WIDTH();
+
+
+                    if (pong.getBallY() < minY) {
+                        System.out.println("Ball collided with top edge of game board");
+                        pong.setBallY(minY);
+                        pong.reverseBallYMovement();
+                    }
+                    int ballLowerEdge = pong.getBallY() + BALL_RADIUS * 2;
+                    if (ballLowerEdge > maxY) {
+                        System.out.println("Ball collided with bottom edge of game board");
+                        pong.setBallY(maxY);
+                        pong.reverseBallYMovement();
+                    }
+                    if (pong.getBallX() < minX) {
+                        System.out.println("Ball collided with left edge of game board");
+                        pong.setBallX(minX);
+                        pong.reverseBallXMovement();
+                    }
+                    int ballRightEdge = pong.getBallX() + BALL_RADIUS * 2;
+                    if (ballRightEdge > maxX) {
+                        System.out.println("Ball collided with right edge of game board");
+                        pong.setBallX(maxX);
+                        pong.reverseBallXMovement();
+                    }
+
                     pong.repaint();
-                    Thread.sleep(1000);
+//                    TODO: reduce sleep time and make ball movement smoother
+                    Thread.sleep(500);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
-//        SwingUtilities.invokeLater(() -> {
-//            Having anything in another invoke Later thread causes the GUI to not render anything
-//            System.out.println("Starting ball on event dispatching thread");
-//            while (true) {
-//                try {
-//
-//                    Pong pong = Pong.INSTANCE;
-//                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -1 : 1));
-//                    pong.repaint();
-//                    Thread.sleep(1000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
     }
 }

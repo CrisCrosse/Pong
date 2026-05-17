@@ -64,7 +64,6 @@ public class Pong extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-        // so that our GUI is big enough
         return new Dimension(TABLE_WIDTH + 2 * TABLE_X, TABLE_HEIGHT + 2 * TABLE_Y);
     }
 
@@ -107,57 +106,61 @@ public class Pong extends JPanel {
         SwingUtilities.invokeLater(Pong::createAndShowGui);
         while (true) {
                 try {
-
                     Pong pong = Pong.INSTANCE;
-//                    detect collisions + change movement directions
-//                    collisions with player paddle --> reverse X direction
-//
-                    int ballSpeed = 2;
-                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -ballSpeed : ballSpeed));
-                    pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -ballSpeed : ballSpeed));
-//                    if after projected movement we intersect then reduce movement to adjacent and reverse direction
-                    int minY = getTABLE_Y();
-                    int maxY = minY + getTABLE_HEIGHT();
-                    int minX = getTABLE_X();
-                    int maxX = getTABLE_X() + getTABLE_WIDTH();
-
-                    if (pong.getBallY() < minY) {
-                        System.out.println("Ball collided with top edge of game board");
-                        pong.setBallY(minY);
-                        pong.reverseBallYMovement();
-                    }
-                    int ballLowerEdge = pong.getBallY() + BALL_RADIUS * 2;
-                    if (ballLowerEdge > maxY) {
-                        System.out.println("Ball collided with bottom edge of game board");
-                        pong.setBallY(maxY - BALL_RADIUS * 2);
-                        pong.reverseBallYMovement();
-                    }
-                    if (pong.getBallX() < minX) {
-                        System.out.println("Ball collided with left edge of game board");
-                        pong.setBallX(minX);
-                        pong.reverseBallXMovement();
-                    }
-                    int ballRightEdge = pong.getBallX() + BALL_RADIUS * 2;
-                    if (ballRightEdge > maxX) {
-                        System.out.println("Ball collided with right edge of game board");
-                        pong.setBallX(maxX - BALL_RADIUS * 2);
-                        pong.reverseBallXMovement();
-                    }
-
-                    if (pong.getBallX() < getPLAYER_PADDLE_X_RIGHT_EDGE() && pong.getBallX() > getPLAYER_PADDLE_X()
-                    && pong.getBallY() > pong.getPlayerPaddleY() && pong.getBallY() < pong.getPlayerPaddleYLowerEdge()) {
-                        System.out.println(pong.getPlayerPaddleYLowerEdge());
-                        System.out.println("Ball collided with player paddle");
-                        pong.setBallX(getPLAYER_PADDLE_X_RIGHT_EDGE());
-                        pong.reverseBallXMovement();
-                    }
-
+                    moveBall(pong, 2);
                     pong.repaint();
-//                    TODO: reduce sleep time and make ball movement smoother
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
+    }
+
+    private static void moveBall(Pong pong, int ballSpeed) {
+        pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -ballSpeed : ballSpeed));
+        pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -ballSpeed : ballSpeed));
+
+        detectCollisionWithBoardEdgesAndCorrect(pong);
+        detectCollisionWithPlayerPaddleAndCorrect(pong);
+    }
+
+    private static void detectCollisionWithBoardEdgesAndCorrect(Pong pong) {
+        int minY = getTABLE_Y();
+        int maxY = minY + getTABLE_HEIGHT();
+        int minX = getTABLE_X();
+        int maxX = getTABLE_X() + getTABLE_WIDTH();
+
+        if (pong.getBallY() < minY) {
+            System.out.println("Ball collided with top edge of game board");
+            pong.setBallY(minY);
+            pong.reverseBallYMovement();
+        }
+        int ballLowerEdge = pong.getBallY() + BALL_RADIUS * 2;
+        if (ballLowerEdge > maxY) {
+            System.out.println("Ball collided with bottom edge of game board");
+            pong.setBallY(maxY - BALL_RADIUS * 2);
+            pong.reverseBallYMovement();
+        }
+        if (pong.getBallX() < minX) {
+            System.out.println("Ball collided with left edge of game board");
+            pong.setBallX(minX);
+            pong.reverseBallXMovement();
+        }
+        int ballRightEdge = pong.getBallX() + BALL_RADIUS * 2;
+        if (ballRightEdge > maxX) {
+            System.out.println("Ball collided with right edge of game board");
+            pong.setBallX(maxX - BALL_RADIUS * 2);
+            pong.reverseBallXMovement();
+        }
+    }
+
+    private static void detectCollisionWithPlayerPaddleAndCorrect(Pong pong) {
+        if (pong.getBallX() < getPLAYER_PADDLE_X_RIGHT_EDGE() && pong.getBallX() > getPLAYER_PADDLE_X()
+        && pong.getBallY() > pong.getPlayerPaddleY() && pong.getBallY() < pong.getPlayerPaddleYLowerEdge()) {
+            System.out.println(pong.getPlayerPaddleYLowerEdge());
+            System.out.println("Ball collided with player paddle");
+            pong.setBallX(getPLAYER_PADDLE_X_RIGHT_EDGE());
+            pong.reverseBallXMovement();
+        }
     }
 }

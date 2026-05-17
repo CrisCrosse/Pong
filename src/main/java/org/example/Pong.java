@@ -48,6 +48,15 @@ public class Pong extends JPanel {
 
     private Pong() {
         super();
+        MoveAction up = new MoveAction(this, true);
+        MoveAction down = new MoveAction(this, false);
+
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
+                "movePlayerPaddleUp");
+        this.getActionMap().put("movePlayerPaddleUp", up);
+        this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
+                "movePlayerPaddleDown");
+        this.getActionMap().put("movePlayerPaddleDown", down);
     }
 
     @Override
@@ -72,17 +81,7 @@ public class Pong extends JPanel {
         JFrame frame = new JFrame("DrawRect");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        Pong pong = Pong.INSTANCE;
-        MoveAction up = new MoveAction(pong, true);
-        MoveAction down = new MoveAction(pong, false);
-
-        pong.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_UP, 0),
-                "movePlayerPaddleUp");
-        pong.getActionMap().put("movePlayerPaddleUp", up);
-        pong.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
-                "movePlayerPaddleDown");
-        pong.getActionMap().put("movePlayerPaddleDown", down);
-        frame.setContentPane(pong);
+        frame.setContentPane(Pong.INSTANCE);
 
         frame.pack();
         frame.setLocationByPlatform(true);

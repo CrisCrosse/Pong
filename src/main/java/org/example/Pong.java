@@ -37,7 +37,7 @@ public class Pong extends JPanel {
     private int ballX = TABLE_CENTRE_X - BALL_RADIUS;
     @Getter
     @Setter
-    private int ballY = TABLE_CENTRE_Y - BALL_RADIUS;
+    private int ballY = getRandomTableY();
     @Getter
     @Setter
     private boolean ballMovingLeft = true;
@@ -58,7 +58,6 @@ public class Pong extends JPanel {
         g.drawLine(TABLE_CENTRE_X, TABLE_Y, TABLE_CENTRE_X, TABLE_Y + TABLE_HEIGHT);
         g.fillRect(PLAYER_PADDLE_X, playerPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
         g.fillRect(TABLE_X + TABLE_WIDTH - PADDLE_X_OFFSET - PADDLE_WIDTH, TABLE_Y + TABLE_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
-//        TODO: randomly place initial ball Y on centre line
         g.fillOval(ballX, ballY, BALL_RADIUS * 2, BALL_RADIUS * 2);
     }
 
@@ -88,6 +87,10 @@ public class Pong extends JPanel {
         frame.pack();
         frame.setLocationByPlatform(true);
         frame.setVisible(true);
+    }
+
+    private static int getRandomTableY() {
+        return (int) (TABLE_Y + (Math.random() * TABLE_HEIGHT));
     }
 
     private void reverseBallXMovement() {

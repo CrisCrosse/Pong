@@ -23,8 +23,11 @@ public class Pong extends JPanel {
     private static final int PADDLE_WIDTH = 10;
     @Getter
     private static final int PADDLE_HEIGHT = 50;
+    @Getter
+    private static final int PLAYER_PADDLE_X = TABLE_X + PADDLE_X_OFFSET;
+    @Getter
+    private static final int PLAYER_PADDLE_X_RIGHT_EDGE = PLAYER_PADDLE_X + PADDLE_WIDTH;
     private static final int BALL_RADIUS = 5;
-
     @Setter
     @Getter
     private int playerPaddleY = TABLE_CENTRE_Y - PADDLE_HEIGHT / 2;
@@ -53,7 +56,7 @@ public class Pong extends JPanel {
 //        TODO: make this look nicer and bevelled --> round rectangle
         g.drawRect(TABLE_X, TABLE_Y, TABLE_WIDTH, TABLE_HEIGHT);
         g.drawLine(TABLE_CENTRE_X, TABLE_Y, TABLE_CENTRE_X, TABLE_Y + TABLE_HEIGHT);
-        g.fillRect(TABLE_X + PADDLE_X_OFFSET, playerPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
+        g.fillRect(PLAYER_PADDLE_X, playerPaddleY, PADDLE_WIDTH, PADDLE_HEIGHT);
         g.fillRect(TABLE_X + TABLE_WIDTH - PADDLE_X_OFFSET - PADDLE_WIDTH, TABLE_Y + TABLE_HEIGHT / 2 - PADDLE_HEIGHT / 2, PADDLE_WIDTH, PADDLE_HEIGHT);
 //        TODO: randomly place initial ball Y on centre line
         g.fillOval(ballX, ballY, BALL_RADIUS * 2, BALL_RADIUS * 2);
@@ -96,6 +99,10 @@ public class Pong extends JPanel {
         this.setBallMovingUp(!this.isBallMovingUp());
     }
 
+    private int getPlayerPaddleYLowerEdge() {
+        return this.getPlayerPaddleY()+ PADDLE_HEIGHT;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Pong::createAndShowGui);
         while (true) {
@@ -103,19 +110,16 @@ public class Pong extends JPanel {
 
                     Pong pong = Pong.INSTANCE;
 //                    detect collisions + change movement directions
-//                    collision with edges of board
-//                     top and bottom = reverse Y direction
-//                    left and right = add to score --> implement later, need a placeholder for now
 //                    collisions with player paddle --> reverse X direction
 //
-                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -20 : 20));
-                    pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -20 : 20));
+                    int ballSpeed = 2;
+                    pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -ballSpeed : ballSpeed));
+                    pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -ballSpeed : ballSpeed));
 //                    if after projected movement we intersect then reduce movement to adjacent and reverse direction
                     int minY = getTABLE_Y();
                     int maxY = minY + getTABLE_HEIGHT();
                     int minX = getTABLE_X();
                     int maxX = getTABLE_X() + getTABLE_WIDTH();
-
 
                     if (pong.getBallY() < minY) {
                         System.out.println("Ball collided with top edge of game board");
@@ -140,9 +144,17 @@ public class Pong extends JPanel {
                         pong.reverseBallXMovement();
                     }
 
+                    if (pong.getBallX() < getPLAYER_PADDLE_X_RIGHT_EDGE() && pong.getBallX() > getPLAYER_PADDLE_X()
+                    && pong.getBallY() > pong.getPlayerPaddleY() && pong.getBallY() < pong.getPlayerPaddleYLowerEdge()) {
+                        System.out.println(pong.getPlayerPaddleYLowerEdge());
+                        System.out.println("Ball collided with player paddle");
+                        pong.setBallX(getPLAYER_PADDLE_X_RIGHT_EDGE());
+                        pong.reverseBallXMovement();
+                    }
+
                     pong.repaint();
 //                    TODO: reduce sleep time and make ball movement smoother
-                    Thread.sleep(500);
+                    Thread.sleep(10);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }

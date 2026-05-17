@@ -5,7 +5,7 @@ import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
 public class MoveAction implements Action {
-    private static final int MOVE_SPEED = 4;
+    private static final int MOVE_SPEED = 8;
 
     private final Pong pong;
     private final boolean movesUp;
@@ -17,35 +17,27 @@ public class MoveAction implements Action {
 
     @Override
     public Object getValue(String key) {
-        System.out.println("getValue");
         return null;
     }
 
     @Override
     public void putValue(String key, Object value) {
-        System.out.println("putValue");
     }
 
     @Override
     public void setEnabled(boolean b) {
-        System.out.println("ZsetEnabled");
     }
 
     @Override
     public boolean isEnabled() {
-        System.out.println("checking if action is enabled");
         return true;
     }
 
     @Override
-    public void addPropertyChangeListener(PropertyChangeListener listener) {
-        System.out.println("addPropertChangeListener");
-    }
+    public void addPropertyChangeListener(PropertyChangeListener listener) {}
 
     @Override
     public void removePropertyChangeListener(PropertyChangeListener listener) {
-        System.out.println("removePropertyChangeListener");
-
     }
 
     @Override

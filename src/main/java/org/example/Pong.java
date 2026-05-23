@@ -4,6 +4,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
+import javax.swing.plaf.basic.BasicPopupMenuSeparatorUI;
+import javax.swing.plaf.basic.BasicPopupMenuUI;
+import javax.swing.plaf.multi.MultiPopupMenuUI;
+import javax.swing.plaf.synth.SynthPopupMenuUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
@@ -65,7 +69,14 @@ public class Pong extends JPanel {
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
                 "movePlayerPaddleDown");
         this.getActionMap().put("movePlayerPaddleDown", down);
-        this.setComponentPopupMenu(new JPopupMenu("You lost"));
+        JPopupMenu youLost = new JPopupMenu("You lost");
+        youLost.setLocation(TABLE_CENTRE_X, TABLE_CENTRE_Y);
+        youLost.setUI(new BasicPopupMenuUI());
+        youLost.add(new JTextField("You lost"));
+        youLost.add(new JMenuItem("Start a new Game"));
+        youLost.add(new JMenuItem("Settings"));
+        youLost.add(new JMenuItem("Multiplayer"));
+        this.setComponentPopupMenu(youLost);
     }
 
     @Override
@@ -88,7 +99,7 @@ public class Pong extends JPanel {
     private static void createAndShowGui() {
         System.out.println("Creating GUI on event dispatching thread");
 //        TODO: have initial menu screen --> set controls and colours, start game
-        JFrame frame = new JFrame("DrawRect");
+        JFrame frame = new JFrame("Pong Table");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         frame.setContentPane(Pong.INSTANCE);

@@ -23,18 +23,21 @@ public class Pong extends JPanel {
     private static final int PADDLE_WIDTH = 10;
     @Getter
     private static final int PADDLE_HEIGHT = 50;
+    public static final int PADDLE_Y_START = TABLE_CENTRE_Y - PADDLE_HEIGHT / 2;
     @Getter
     private static final int PLAYER_PADDLE_X = TABLE_X + PADDLE_X_OFFSET;
     @Getter
     private static final int PLAYER_PADDLE_X_RIGHT_EDGE = PLAYER_PADDLE_X + PADDLE_WIDTH;
     private static final int BALL_RADIUS = 5;
+    private static final int BALL_X_START = TABLE_CENTRE_X - BALL_RADIUS;
+    private static final int MAX_SCORE = 0;
     @Setter
     @Getter
-    private int playerPaddleY = TABLE_CENTRE_Y - PADDLE_HEIGHT / 2;
+    private int playerPaddleY = PADDLE_Y_START;
 
     @Getter
     @Setter
-    private int ballX = TABLE_CENTRE_X - BALL_RADIUS;
+    private int ballX = BALL_X_START;
     @Getter
     @Setter
     private int ballY = getRandomTableY();
@@ -44,7 +47,12 @@ public class Pong extends JPanel {
     @Getter
     @Setter
     private boolean ballMovingUp = true;
-
+    @Getter
+    @Setter
+    private int playerScore = 0;
+    @Getter
+    @Setter
+    private int computerScore = 0;
 
     private Pong() {
         super();
@@ -57,11 +65,13 @@ public class Pong extends JPanel {
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
                 "movePlayerPaddleDown");
         this.getActionMap().put("movePlayerPaddleDown", down);
+        this.setComponentPopupMenu(new JPopupMenu("You lost"));
     }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+        g.drawString(this.getScoreAsString(), 10, 15);
 //        TODO: make this look nicer and bevelled --> round rectangle
         g.drawRect(TABLE_X, TABLE_Y, TABLE_WIDTH, TABLE_HEIGHT);
         g.drawLine(TABLE_CENTRE_X, TABLE_Y, TABLE_CENTRE_X, TABLE_Y + TABLE_HEIGHT);
@@ -104,12 +114,17 @@ public class Pong extends JPanel {
         return this.getPlayerPaddleY()+ PADDLE_HEIGHT;
     }
 
+    private String getScoreAsString() {
+        return playerScore + ":" + computerScore;
+    }
+
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Pong::createAndShowGui);
-        while (true) {
+        boolean gameOngoing = true;
+        while (gameOngoing) {
                 try {
                     Pong pong = Pong.INSTANCE;
-                    moveBall(pong, 2);
+                    gameOngoing = moveBall(pong, 2);
                     pong.repaint();
                     Thread.sleep(10);
                 } catch (InterruptedException e) {
@@ -118,15 +133,16 @@ public class Pong extends JPanel {
             }
     }
 
-    private static void moveBall(Pong pong, int ballSpeed) {
+    private static boolean moveBall(Pong pong, int ballSpeed) {
         pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -ballSpeed : ballSpeed));
         pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -ballSpeed : ballSpeed));
 
-        detectCollisionWithBoardEdgesAndCorrect(pong);
+        boolean gameOngoing = detectCollisionWithBoardEdgesAndGameOver(pong);
         detectCollisionWithPlayerPaddleAndCorrect(pong);
+        return gameOngoing;
     }
 
-    private static void detectCollisionWithBoardEdgesAndCorrect(Pong pong) {
+    private static boolean detectCollisionWithBoardEdgesAndGameOver(Pong pong) {
         int minY = getTABLE_Y();
         int maxY = minY + getTABLE_HEIGHT();
         int minX = getTABLE_X();
@@ -145,8 +161,13 @@ public class Pong extends JPanel {
         }
         if (pong.getBallX() < minX) {
             System.out.println("Ball collided with left edge of game board");
-            pong.setBallX(minX);
-            pong.reverseBallXMovement();
+            pong.setComputerScore(pong.getComputerScore() + 1);
+            pong.resetBallAndPaddlePositions();
+            if (pong.getComputerScore() > MAX_SCORE) {
+                System.out.println("Exceeded max score, showing you lost menu");
+                pong.getComponentPopupMenu().setVisible(true);
+                return false;
+            }
         }
         int ballRightEdge = pong.getBallX() + BALL_RADIUS * 2;
         if (ballRightEdge > maxX) {
@@ -154,6 +175,7 @@ public class Pong extends JPanel {
             pong.setBallX(maxX - BALL_RADIUS * 2);
             pong.reverseBallXMovement();
         }
+        return true;
     }
 
     private static void detectCollisionWithPlayerPaddleAndCorrect(Pong pong) {
@@ -164,5 +186,12 @@ public class Pong extends JPanel {
             pong.setBallX(getPLAYER_PADDLE_X_RIGHT_EDGE());
             pong.reverseBallXMovement();
         }
+    }
+
+    private void resetBallAndPaddlePositions() {
+        this.setBallX(BALL_X_START);
+        this.setBallY(getRandomTableY());
+
+        this.setPlayerPaddleY(PADDLE_Y_START);
     }
 }

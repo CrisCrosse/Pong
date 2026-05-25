@@ -4,14 +4,12 @@ import lombok.Getter;
 import lombok.Setter;
 
 import javax.swing.*;
-import javax.swing.plaf.basic.BasicPopupMenuSeparatorUI;
 import javax.swing.plaf.basic.BasicPopupMenuUI;
-import javax.swing.plaf.multi.MultiPopupMenuUI;
-import javax.swing.plaf.synth.SynthPopupMenuUI;
 import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class Pong extends JPanel {
+//    TODO: clean up static vs instance fields. They are effectively the same given singleton instance.
     private static final Pong INSTANCE = new Pong();
     @Getter
     private static final int TABLE_WIDTH = 500;
@@ -57,6 +55,8 @@ public class Pong extends JPanel {
     @Getter
     @Setter
     private int computerScore = 0;
+    @Setter
+    private static volatile boolean isGameOngoing = true;
 
     private Pong() {
         super();
@@ -73,7 +73,9 @@ public class Pong extends JPanel {
         youLost.setLocation(TABLE_CENTRE_X, TABLE_CENTRE_Y);
         youLost.setUI(new BasicPopupMenuUI());
         youLost.add(new JTextField("You lost"));
-        youLost.add(new JMenuItem("Start a new Game"));
+        JMenuItem startANewGame = new JMenuItem("Start a new Game");
+        startANewGame.addMouseListener(new ResetGameMouseListener(this));
+        youLost.add(startANewGame);
         youLost.add(new JMenuItem("Settings"));
         youLost.add(new JMenuItem("Multiplayer"));
         this.setComponentPopupMenu(youLost);
@@ -131,17 +133,31 @@ public class Pong extends JPanel {
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Pong::createAndShowGui);
-        boolean gameOngoing = true;
-        while (gameOngoing) {
-                try {
-                    Pong pong = Pong.INSTANCE;
-                    gameOngoing = moveBall(pong, 2);
-                    pong.repaint();
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+        while (true) {
+            try {
+//                Loop infinitely and wait for updated state to retrigger game
+                Thread.sleep(100);
+                enterGameLoopIfGameOngoing();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
+        }
+    }
+
+    public static void enterGameLoopIfGameOngoing() {
+        while (isGameOngoing) {
+            try {
+                Pong pong = Pong.INSTANCE;
+                boolean gameOngoing = moveBall(pong, 2);
+                if (!gameOngoing) {
+                    Pong.setGameOngoing(false);
+                }
+                pong.repaint();
+                Thread.sleep(10);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 
     private static boolean moveBall(Pong pong, int ballSpeed) {

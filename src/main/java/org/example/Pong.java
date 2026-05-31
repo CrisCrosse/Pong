@@ -34,6 +34,8 @@ public class Pong extends JPanel {
     private static final int BALL_X_START = TABLE_CENTRE_X - BALL_RADIUS;
     private static final int MAX_SCORE = 0;
     @Setter
+    private static volatile boolean isGameOngoing = true;
+    @Setter
     @Getter
     private int playerPaddleY = PADDLE_Y_START;
 
@@ -55,8 +57,8 @@ public class Pong extends JPanel {
     @Getter
     @Setter
     private int computerScore = 0;
-    @Setter
-    private static volatile boolean isGameOngoing = true;
+    @Getter
+    private JTextField gameStatusMenuTextField;
 
     private Pong() {
         super();
@@ -69,16 +71,19 @@ public class Pong extends JPanel {
         this.getInputMap(JComponent.WHEN_IN_FOCUSED_WINDOW).put(KeyStroke.getKeyStroke(KeyEvent.VK_DOWN, 0),
                 "movePlayerPaddleDown");
         this.getActionMap().put("movePlayerPaddleDown", down);
-        JPopupMenu youLost = new JPopupMenu("You lost");
-        youLost.setLocation(TABLE_CENTRE_X, TABLE_CENTRE_Y);
-        youLost.setUI(new BasicPopupMenuUI());
-        youLost.add(new JTextField("You lost"));
+
+        JPopupMenu menu = new JPopupMenu("Pong Menu");
+        menu.setLocation(TABLE_CENTRE_X, TABLE_CENTRE_Y);
+        menu.setUI(new BasicPopupMenuUI());
+        JTextField gameStatusTextField = new JTextField();
+        gameStatusMenuTextField = gameStatusTextField;
+        menu.add(gameStatusTextField);
         JMenuItem startANewGame = new JMenuItem("Start a new Game");
         startANewGame.addMouseListener(new ResetGameMouseListener(this));
-        youLost.add(startANewGame);
-        youLost.add(new JMenuItem("Settings"));
-        youLost.add(new JMenuItem("Multiplayer"));
-        this.setComponentPopupMenu(youLost);
+        menu.add(startANewGame);
+        menu.add(new JMenuItem("Settings"));
+        menu.add(new JMenuItem("Multiplayer"));
+        this.setComponentPopupMenu(menu);
     }
 
     @Override
@@ -192,6 +197,7 @@ public class Pong extends JPanel {
             pong.resetBallAndPaddlePositions();
             if (pong.getComputerScore() > MAX_SCORE) {
                 System.out.println("Exceeded max score, showing you lost menu");
+                pong.setMenuGameStatusText("You lost!");
                 pong.getComponentPopupMenu().setVisible(true);
                 return false;
             }
@@ -199,8 +205,14 @@ public class Pong extends JPanel {
         int ballRightEdge = pong.getBallX() + BALL_RADIUS * 2;
         if (ballRightEdge > maxX) {
             System.out.println("Ball collided with right edge of game board");
-            pong.setBallX(maxX - BALL_RADIUS * 2);
-            pong.reverseBallXMovement();
+            pong.setPlayerScore(pong.getPlayerScore() + 1);
+            pong.resetBallAndPaddlePositions();
+            if (pong.getPlayerScore() > MAX_SCORE) {
+                System.out.println("Exceeded max score, showing you won menu");
+                pong.setMenuGameStatusText("You won!");
+                pong.getComponentPopupMenu().setVisible(true);
+                return false;
+            }
         }
         return true;
     }
@@ -220,5 +232,9 @@ public class Pong extends JPanel {
         this.setBallY(getRandomTableY());
 
         this.setPlayerPaddleY(PADDLE_Y_START);
+    }
+
+    private void setMenuGameStatusText(String string) {
+        this.gameStatusMenuTextField.setText(string);
     }
 }

@@ -9,7 +9,8 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class Pong extends JPanel {
-//    TODO: clean up static vs instance fields. They are effectively the same given singleton instance.
+    public static final int MAX_PADDLE_Y = getTABLE_Y() + getTABLE_HEIGHT() - getPADDLE_HEIGHT();
+    //    TODO: clean up static vs instance fields. They are effectively the same given singleton instance.
     private static final Pong INSTANCE = new Pong();
     @Getter
     private static final int TABLE_WIDTH = 500;
@@ -47,9 +48,12 @@ public class Pong extends JPanel {
     @Getter
     @Setter
     private int ballX = BALL_X_START;
+//    @Getter
+//    @Setter
+//    private int ballY = getRandomTableY();
     @Getter
     @Setter
-    private int ballY = getRandomTableY();
+    private int ballY = TABLE_CENTRE_Y;
     @Getter
     @Setter
     private boolean ballMovingLeft = true;
@@ -139,7 +143,6 @@ public class Pong extends JPanel {
             try {
                 Pong pong = Pong.INSTANCE;
                 boolean gameOngoing = moveBall(pong);
-                pong.moveComputerPaddle();
                 if (!gameOngoing) {
                     Pong.setGameOngoing(false);
                 }
@@ -156,22 +159,30 @@ public class Pong extends JPanel {
         pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -BALL_SPEED : BALL_SPEED));
 
         boolean gameOngoing = detectCollisionWithBoardEdgesAndGameOver(pong);
+        pong.moveComputerPaddle();
         detectCollisionWithPaddlesAndCorrect(pong);
         return gameOngoing;
     }
 
     private void moveComputerPaddle() {
-        int ballYInterception = findBallInterceptionWithComputerPaddle();
-        int currentY = this.getComputerPaddleY();
+        int ballCentrePointIntercept = findBallCentrePointThatInterceptsComputerPaddle();
+//        ball intercept is further than paddle can go otherwise off board if centrally aligned
+        if (ballCentrePointIntercept < TABLE_Y + PADDLE_HEIGHT / 2) {
+            ballCentrePointIntercept = TABLE_Y + PADDLE_HEIGHT / 2;
+        } else if (ballCentrePointIntercept > MAX_PADDLE_Y - PADDLE_HEIGHT / 2) {
+            ballCentrePointIntercept = MAX_PADDLE_Y - PADDLE_HEIGHT / 2;
+        }
 
-         if (ballYInterception > currentY) {
+        int currentY = this.getComputerPaddleY();
+        int currentPaddleCentre = currentY + PADDLE_HEIGHT / 2;
+        if (ballCentrePointIntercept > currentPaddleCentre) {
             this.setComputerPaddleY(currentY + 1);
-        } else if (ballYInterception < currentY){
+        } else if (ballCentrePointIntercept < currentPaddleCentre){
             this.setComputerPaddleY(currentY - 1);
         }
     }
 
-    private int findBallInterceptionWithComputerPaddle() {
+    private int findBallCentrePointThatInterceptsComputerPaddle() {
 //        assumes player hits the ball otherwise round will reset
 
         int minY = getTABLE_Y();
@@ -182,57 +193,75 @@ public class Pong extends JPanel {
         int ballLeft = this.getBallX();
         int ballRight = getBallRightEdge(this);
 
-        int horizontalDistanceToTravel = 0;
+        int horizontalDistanceToTravel;
         if (isBallMovingLeft()) {
 //            left side travel; ball left side X to paddle offset + paddle width
 //            right side travel; table width - (2 * (paddle offset + paddle width))
-             horizontalDistanceToTravel += ballLeft - getPLAYER_PADDLE_X_RIGHT_EDGE();
-             horizontalDistanceToTravel += TABLE_WIDTH - (2 * (PADDLE_X_OFFSET + PADDLE_WIDTH));
+             horizontalDistanceToTravel = ballLeft - getPLAYER_PADDLE_X_RIGHT_EDGE();
+             horizontalDistanceToTravel += COMPUTER_PADDLE_X - (PLAYER_PADDLE_X_RIGHT_EDGE + BALL_RADIUS * 2);
         } else {
-            horizontalDistanceToTravel += COMPUTER_PADDLE_X - ballRight;
+            horizontalDistanceToTravel = COMPUTER_PADDLE_X - ballRight;
         }
-//            vertical distance travelled is 1 for every horizontal travel
+        if (horizontalDistanceToTravel < 0) {
+            System.out.println("less than 0 horizontal distance should not be possible where interception always occurs");
+            return 0;
+        }
+        System.out.printf("Horizontal distance to travel: %d%n", horizontalDistanceToTravel);
+
+//        X and Y of ball is always changing at same rate
+        int verticalDistanceToTravel = horizontalDistanceToTravel;
+        int maxVerticalDistanceBallCanTravelWithinTable = TABLE_HEIGHT - BALL_RADIUS * 2;
+
+
         int verticalDistanceToNextBoundary;
         if (isBallMovingUp()) {
             verticalDistanceToNextBoundary = ballTop - minY;
         } else {
             verticalDistanceToNextBoundary = maxY - ballBottom;
         }
-//        X and Y of ball is always changing at same rate
-        int verticalDistanceToTravel = horizontalDistanceToTravel;
-        int verticalDistanceBallCanTravel = TABLE_HEIGHT - BALL_RADIUS * 2;
 
 //            case where ball will not hit boundary before reaching
-        if (verticalDistanceToTravel < verticalDistanceBallCanTravel) {
+        if (verticalDistanceToNextBoundary > verticalDistanceToTravel) {
+            System.out.println("Ball will not intercept boundary again before interception");
             if (isBallMovingUp()) {
-                int interceptionCentrePoint = ballTop - verticalDistanceToTravel + PADDLE_HEIGHT / 2;
+                int interceptionCentrePoint = ballTop - verticalDistanceToTravel;
+                System.out.printf("Ball going up, intercept as going up: %d%n", interceptionCentrePoint);
                 return interceptionCentrePoint;
             } else {
-                return ballBottom + horizontalDistanceToTravel - PADDLE_HEIGHT / 2;
+                int interception = ballBottom + verticalDistanceToTravel;
+                System.out.printf("Ball going down, intercept as going down: %d%n", interception);
+                return interception;
             }
         }
+        return TABLE_CENTRE_Y;
 
-        int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
-        int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / verticalDistanceBallCanTravel;
-        int remainder = verticalDistanceToTravelAfterNextBoundary % TABLE_HEIGHT;
-
-//            Think there might be some wierdness here with how i am calculating distances due to taking into
-//            account ball and paddle thicknesses
-        if (numberOfReversals % 2 == 0) {
-//                ball will intercept topside + remainder if going up
-            if (isBallMovingUp()) {
-                return minY + remainder - PADDLE_HEIGHT / 2;
-            } else {
-                return maxY - remainder - PADDLE_HEIGHT / 2;
-            }
-//                ball will intercept bottomside - remainder if going down
-        } else {
-            if (isBallMovingUp()) {
-                return maxY - remainder - PADDLE_HEIGHT / 2;
-            } else {
-                return minY + remainder - PADDLE_HEIGHT / 2;
-            }
-        }
+//        int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
+//        int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable;
+//        int remainder = verticalDistanceToTravelAfterNextBoundary % TABLE_HEIGHT;
+//
+////            Think there might be some wierdness here with how i am calculating distances due to taking into
+////            account ball and paddle thicknesses
+//        int fromTopEdgeInterception = minY + remainder;
+//        int fromBottomEdgeInterception = maxY - remainder;
+//        if (numberOfReversals % 2 == 0) {
+////                ball will intercept topside + remainder if going up
+//            if (isBallMovingUp()) {
+//                System.out.printf("Even reversals, ball going up, intercept as going up: %d%n", fromBottomEdgeInterception);
+//                return fromBottomEdgeInterception;
+//            } else {
+//                System.out.printf("Even reversals, ball going down, intercept as going down: %d%n", fromTopEdgeInterception);
+//                return fromTopEdgeInterception;
+//            }
+////                ball will intercept bottomside - remainder if going down
+//        } else {
+//            if (isBallMovingUp()) {
+//                System.out.printf("Odd reversals, ball going up, intercept as going down: %d%n", fromTopEdgeInterception);
+//                return fromTopEdgeInterception;
+//            } else {
+//                System.out.printf("Odd reversals, ball going down, intercept as going up: %d%n", fromBottomEdgeInterception);
+//                return fromBottomEdgeInterception;
+//            }
+//        }
 //            if 400 horizontal distance to travel, 400 vertical as well
 //            given table height of 75 and initial offset of 10 from top moving upwards
 //            ball travels 10 up, so 390 vertical travel left

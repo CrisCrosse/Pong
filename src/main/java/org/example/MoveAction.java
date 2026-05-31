@@ -44,7 +44,7 @@ public class MoveAction implements Action {
     public void actionPerformed(ActionEvent e) {
         int currentY = pong.getPlayerPaddleY();
         int minYPaddleValue = Pong.getTABLE_Y();
-        int maxYPaddleValue = Pong.getTABLE_Y() + Pong.getTABLE_HEIGHT() - Pong.getPADDLE_HEIGHT();
+        int maxYPaddleValue = Pong.MAX_PADDLE_Y;
 
         if (movesUp && currentY > minYPaddleValue) {
             if (currentY - MOVE_SPEED < minYPaddleValue) {

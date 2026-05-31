@@ -103,39 +103,6 @@ public class Pong extends JPanel {
         return new Dimension(TABLE_WIDTH + 2 * TABLE_X, TABLE_HEIGHT + 2 * TABLE_Y);
     }
 
-    private static void createAndShowGui() {
-        System.out.println("Creating GUI on event dispatching thread");
-//        TODO: have initial menu screen --> set controls and colours, start game
-        JFrame frame = new JFrame("Pong Table");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-        frame.setContentPane(Pong.INSTANCE);
-
-        frame.pack();
-        frame.setLocationByPlatform(true);
-        frame.setVisible(true);
-    }
-
-    private static int getRandomTableY() {
-        return (int) (TABLE_Y + (Math.random() * TABLE_HEIGHT));
-    }
-
-    private void reverseBallXMovement() {
-        this.setBallMovingLeft(!this.isBallMovingLeft());
-    }
-
-    private void reverseBallYMovement() {
-        this.setBallMovingUp(!this.isBallMovingUp());
-    }
-
-    private int getPlayerPaddleYLowerEdge() {
-        return this.getPlayerPaddleY()+ PADDLE_HEIGHT;
-    }
-
-    private String getScoreAsString() {
-        return playerScore + ":" + computerScore;
-    }
-
     public static void main(String[] args) {
         SwingUtilities.invokeLater(Pong::createAndShowGui);
         while (true) {
@@ -149,7 +116,20 @@ public class Pong extends JPanel {
         }
     }
 
-    public static void enterGameLoopIfGameOngoing() {
+    private static void createAndShowGui() {
+        System.out.println("Creating GUI on event dispatching thread");
+//        TODO: have initial menu screen --> set controls and colours, start game
+        JFrame frame = new JFrame("Pong Table");
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+
+        frame.setContentPane(Pong.INSTANCE);
+
+        frame.pack();
+        frame.setLocationByPlatform(true);
+        frame.setVisible(true);
+    }
+
+    private static void enterGameLoopIfGameOngoing() {
         while (isGameOngoing) {
             try {
                 Pong pong = Pong.INSTANCE;
@@ -219,7 +199,7 @@ public class Pong extends JPanel {
 
     private static void detectCollisionWithPlayerPaddleAndCorrect(Pong pong) {
         if (pong.getBallX() < getPLAYER_PADDLE_X_RIGHT_EDGE() && pong.getBallX() > getPLAYER_PADDLE_X()
-        && pong.getBallY() > pong.getPlayerPaddleY() && pong.getBallY() < pong.getPlayerPaddleYLowerEdge()) {
+                && pong.getBallY() > pong.getPlayerPaddleY() && pong.getBallY() < pong.getPlayerPaddleYLowerEdge()) {
             System.out.println(pong.getPlayerPaddleYLowerEdge());
             System.out.println("Ball collided with player paddle");
             pong.setBallX(getPLAYER_PADDLE_X_RIGHT_EDGE());
@@ -236,5 +216,25 @@ public class Pong extends JPanel {
 
     private void setMenuGameStatusText(String string) {
         this.gameStatusMenuTextField.setText(string);
+    }
+
+    private static int getRandomTableY() {
+        return (int) (TABLE_Y + (Math.random() * TABLE_HEIGHT));
+    }
+
+    private void reverseBallXMovement() {
+        this.setBallMovingLeft(!this.isBallMovingLeft());
+    }
+
+    private void reverseBallYMovement() {
+        this.setBallMovingUp(!this.isBallMovingUp());
+    }
+
+    private int getPlayerPaddleYLowerEdge() {
+        return this.getPlayerPaddleY()+ PADDLE_HEIGHT;
+    }
+
+    private String getScoreAsString() {
+        return playerScore + ":" + computerScore;
     }
 }

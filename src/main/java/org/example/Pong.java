@@ -233,41 +233,26 @@ public class Pong extends JPanel {
                 return interception;
             }
         }
-        return TABLE_CENTRE_Y;
 
-//        int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
-//        int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable;
-//        int remainder = verticalDistanceToTravelAfterNextBoundary % TABLE_HEIGHT;
-//
-////            Think there might be some wierdness here with how i am calculating distances due to taking into
-////            account ball and paddle thicknesses
-//        int fromTopEdgeInterception = minY + remainder;
-//        int fromBottomEdgeInterception = maxY - remainder;
-//        if (numberOfReversals % 2 == 0) {
-////                ball will intercept topside + remainder if going up
-//            if (isBallMovingUp()) {
-//                System.out.printf("Even reversals, ball going up, intercept as going up: %d%n", fromBottomEdgeInterception);
-//                return fromBottomEdgeInterception;
-//            } else {
-//                System.out.printf("Even reversals, ball going down, intercept as going down: %d%n", fromTopEdgeInterception);
-//                return fromTopEdgeInterception;
-//            }
-////                ball will intercept bottomside - remainder if going down
-//        } else {
-//            if (isBallMovingUp()) {
-//                System.out.printf("Odd reversals, ball going up, intercept as going down: %d%n", fromTopEdgeInterception);
-//                return fromTopEdgeInterception;
-//            } else {
-//                System.out.printf("Odd reversals, ball going down, intercept as going up: %d%n", fromBottomEdgeInterception);
-//                return fromBottomEdgeInterception;
-//            }
-//        }
-//            if 400 horizontal distance to travel, 400 vertical as well
-//            given table height of 75 and initial offset of 10 from top moving upwards
-//            ball travels 10 up, so 390 vertical travel left
-//            5 vertical reversals occur --> 390 / 75 = 5 w 15 remainder
-//            target Y is therefore on the bottom side --> odd number of reversals and 15 offset
+        int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
+        int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable;
+        int remainder = verticalDistanceToTravelAfterNextBoundary % maxVerticalDistanceBallCanTravelWithinTable;
 
+        int fromTopEdgeInterception = minY + remainder;
+        int fromBottomEdgeInterception = maxY - remainder;
+        if (numberOfReversals % 2 == 0) {
+            if (isBallMovingUp()) {
+                return fromTopEdgeInterception;
+            } else {
+                return fromBottomEdgeInterception;
+            }
+        } else {
+            if (isBallMovingUp()) {
+                return fromBottomEdgeInterception;
+            } else {
+                return fromTopEdgeInterception;
+            }
+        }
     }
 
     private static boolean detectCollisionWithBoardEdgesAndGameOver(Pong pong) {

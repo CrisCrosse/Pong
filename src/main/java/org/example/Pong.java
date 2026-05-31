@@ -166,18 +166,19 @@ public class Pong extends JPanel {
 
     private void moveComputerPaddle() {
         int ballCentrePointIntercept = findBallCentrePointThatInterceptsComputerPaddle();
-//        ball intercept is further than paddle can go otherwise off board if centrally aligned
-        if (ballCentrePointIntercept < TABLE_Y + PADDLE_HEIGHT / 2) {
-            ballCentrePointIntercept = TABLE_Y + PADDLE_HEIGHT / 2;
-        } else if (ballCentrePointIntercept > MAX_PADDLE_Y - PADDLE_HEIGHT / 2) {
-            ballCentrePointIntercept = MAX_PADDLE_Y - PADDLE_HEIGHT / 2;
+        int paddleYIntercept = ballCentrePointIntercept - (PADDLE_HEIGHT / 2);
+
+        if (paddleYIntercept < TABLE_Y) {
+            paddleYIntercept = TABLE_Y;
+        } if (paddleYIntercept > MAX_PADDLE_Y) {
+            paddleYIntercept = MAX_PADDLE_Y;
         }
 
         int currentY = this.getComputerPaddleY();
-        int currentPaddleCentre = currentY + PADDLE_HEIGHT / 2;
-        if (ballCentrePointIntercept > currentPaddleCentre) {
+
+        if (paddleYIntercept > currentY) {
             this.setComputerPaddleY(currentY + 1);
-        } else if (ballCentrePointIntercept < currentPaddleCentre){
+        } else if (paddleYIntercept < currentY){
             this.setComputerPaddleY(currentY - 1);
         }
     }
@@ -193,14 +194,14 @@ public class Pong extends JPanel {
         int ballLeft = this.getBallX();
         int ballRight = getBallRightEdge(this);
 
-        int horizontalDistanceToTravel;
+        int horizontalDistanceToTravel = 0;
         if (isBallMovingLeft()) {
 //            left side travel; ball left side X to paddle offset + paddle width
 //            right side travel; table width - (2 * (paddle offset + paddle width))
-             horizontalDistanceToTravel = ballLeft - getPLAYER_PADDLE_X_RIGHT_EDGE();
+             horizontalDistanceToTravel += ballLeft - getPLAYER_PADDLE_X_RIGHT_EDGE();
              horizontalDistanceToTravel += COMPUTER_PADDLE_X - (PLAYER_PADDLE_X_RIGHT_EDGE + BALL_RADIUS * 2);
         } else {
-            horizontalDistanceToTravel = COMPUTER_PADDLE_X - ballRight;
+            horizontalDistanceToTravel += COMPUTER_PADDLE_X - ballRight;
         }
         if (horizontalDistanceToTravel < 0) {
             System.out.println("less than 0 horizontal distance should not be possible where interception always occurs");
@@ -211,7 +212,6 @@ public class Pong extends JPanel {
 //        X and Y of ball is always changing at same rate
         int verticalDistanceToTravel = horizontalDistanceToTravel;
         int maxVerticalDistanceBallCanTravelWithinTable = TABLE_HEIGHT - BALL_RADIUS * 2;
-
 
         int verticalDistanceToNextBoundary;
         if (isBallMovingUp()) {
@@ -238,19 +238,19 @@ public class Pong extends JPanel {
         int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable;
         int remainder = verticalDistanceToTravelAfterNextBoundary % maxVerticalDistanceBallCanTravelWithinTable;
 
-        int fromTopEdgeInterception = minY + remainder;
-        int fromBottomEdgeInterception = maxY - remainder;
+        int goingDownInterception = minY + remainder;
+        int goingUpInterception = maxY - remainder;
         if (numberOfReversals % 2 == 0) {
             if (isBallMovingUp()) {
-                return fromTopEdgeInterception;
+                return goingDownInterception;
             } else {
-                return fromBottomEdgeInterception;
+                return goingUpInterception;
             }
         } else {
             if (isBallMovingUp()) {
-                return fromBottomEdgeInterception;
+                return goingUpInterception;
             } else {
-                return fromTopEdgeInterception;
+                return goingDownInterception;
             }
         }
     }

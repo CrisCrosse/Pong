@@ -26,12 +26,13 @@ public class Pong extends JPanel {
     public static final int COMPUTER_PADDLE_X = TABLE_X + TABLE_WIDTH - PADDLES_X_OFFSET_FROM_TABLE_EDGE - PADDLE_WIDTH;
 
     public static final int BALL_RADIUS = 5;
+    public static final int BALL_DIAMETER = BALL_RADIUS * 2;
     public static final int BALL_SPEED = 2;
 
     public static final int BALL_X_START = TABLE_CENTRE_X - BALL_RADIUS;
     public static final int MAX_SCORE = 0;
     //    TODO: clean up static vs instance fields. They are effectively the same given singleton instance.
-    private static final Pong INSTANCE = new Pong();
+    public static final Pong INSTANCE = new Pong();
     @Setter
     private static volatile boolean isGameOngoing = true;
     @Setter

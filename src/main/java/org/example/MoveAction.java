@@ -4,6 +4,9 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
+import static org.example.Pong.MAX_PADDLE_Y;
+import static org.example.Pong.TABLE_Y;
+
 public class MoveAction implements Action {
     private static final int MOVE_SPEED = 8;
 
@@ -43,8 +46,8 @@ public class MoveAction implements Action {
     @Override
     public void actionPerformed(ActionEvent e) {
         int currentY = pong.getPlayerPaddleY();
-        int minYPaddleValue = Pong.getTABLE_Y();
-        int maxYPaddleValue = Pong.MAX_PADDLE_Y;
+        int minYPaddleValue = TABLE_Y;
+        int maxYPaddleValue = MAX_PADDLE_Y;
 
         if (movesUp && currentY > minYPaddleValue) {
             if (currentY - MOVE_SPEED < minYPaddleValue) {

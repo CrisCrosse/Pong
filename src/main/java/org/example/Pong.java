@@ -9,33 +9,29 @@ import java.awt.*;
 import java.awt.event.KeyEvent;
 
 public class Pong extends JPanel {
-    public static final int MAX_PADDLE_Y = getTABLE_Y() + getTABLE_HEIGHT() - getPADDLE_HEIGHT();
+    public static final int TABLE_X = 20;
+    public static final int TABLE_Y = 20;
+    public static final int TABLE_HEIGHT = 300;
+    public static final int TABLE_WIDTH = 500;
+    public static final int TABLE_CENTRE_Y = TABLE_Y + TABLE_HEIGHT / 2;
+    public static final int TABLE_CENTRE_X = TABLE_X + TABLE_WIDTH / 2;
+
+    public static final int PADDLES_X_OFFSET_FROM_TABLE_EDGE = 20;
+    public static final int PADDLE_WIDTH = 10;
+    public static final int PADDLE_HEIGHT = 50;
+    public static final int PADDLE_Y_START = TABLE_CENTRE_Y - PADDLE_HEIGHT / 2;
+    public static final int MAX_PADDLE_Y = TABLE_Y + TABLE_HEIGHT - PADDLE_HEIGHT;
+    public static final int PLAYER_PADDLE_X = TABLE_X + PADDLES_X_OFFSET_FROM_TABLE_EDGE;
+    public static final int PLAYER_PADDLE_X_RIGHT_EDGE = PLAYER_PADDLE_X + PADDLE_WIDTH;
+    public static final int COMPUTER_PADDLE_X = TABLE_X + TABLE_WIDTH - PADDLES_X_OFFSET_FROM_TABLE_EDGE - PADDLE_WIDTH;
+
+    public static final int BALL_RADIUS = 5;
+    public static final int BALL_SPEED = 2;
+
+    public static final int BALL_X_START = TABLE_CENTRE_X - BALL_RADIUS;
+    public static final int MAX_SCORE = 0;
     //    TODO: clean up static vs instance fields. They are effectively the same given singleton instance.
     private static final Pong INSTANCE = new Pong();
-    @Getter
-    private static final int TABLE_WIDTH = 500;
-    @Getter
-    private static final int TABLE_HEIGHT = 300;
-    @Getter
-    private static final int TABLE_X = 20;
-    @Getter
-    private static final int TABLE_Y = 20;
-    public static final int TABLE_CENTRE_Y = TABLE_Y + TABLE_HEIGHT / 2;
-    private static final int TABLE_CENTRE_X = TABLE_X + TABLE_WIDTH / 2;
-    private static final int PADDLE_X_OFFSET = 20;
-    private static final int PADDLE_WIDTH = 10;
-    private static final int COMPUTER_PADDLE_X = TABLE_X + TABLE_WIDTH - PADDLE_X_OFFSET - PADDLE_WIDTH;
-    @Getter
-    private static final int PADDLE_HEIGHT = 50;
-    private static final int PADDLE_Y_START = TABLE_CENTRE_Y - PADDLE_HEIGHT / 2;
-    @Getter
-    private static final int PLAYER_PADDLE_X = TABLE_X + PADDLE_X_OFFSET;
-    @Getter
-    private static final int PLAYER_PADDLE_X_RIGHT_EDGE = PLAYER_PADDLE_X + PADDLE_WIDTH;
-    private static final int BALL_RADIUS = 5;
-    private static final int BALL_X_START = TABLE_CENTRE_X - BALL_RADIUS;
-    private static final int MAX_SCORE = 0;
-    public static final int BALL_SPEED = 2;
     @Setter
     private static volatile boolean isGameOngoing = true;
     @Setter
@@ -157,7 +153,7 @@ public class Pong extends JPanel {
     private static boolean moveBall(Pong pong) {
         pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -BALL_SPEED : BALL_SPEED));
         pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -BALL_SPEED : BALL_SPEED));
-
+        //  some inaccuracy because when flips the vertical distance does not change but horizontal distance reduces
         boolean gameOngoing = detectCollisionWithBoardEdgesAndGameOver(pong);
         pong.moveComputerPaddle();
         detectCollisionWithPaddlesAndCorrect(pong);
@@ -165,7 +161,8 @@ public class Pong extends JPanel {
     }
 
     private void moveComputerPaddle() {
-        int ballCentrePointIntercept = findBallCentrePointThatInterceptsComputerPaddle();
+        int ballCentrePointIntercept = Utils.findBallCentrePointThatInterceptsComputerPaddle(this);
+        System.out.printf("Ball will hit at %s%n", ballCentrePointIntercept);
         int paddleYIntercept = ballCentrePointIntercept - (PADDLE_HEIGHT / 2);
 
         if (paddleYIntercept < TABLE_Y) {
@@ -183,90 +180,18 @@ public class Pong extends JPanel {
         }
     }
 
-    private int findBallCentrePointThatInterceptsComputerPaddle() {
-//        assumes player hits the ball otherwise round will reset
-
-        int minY = getTABLE_Y();
-        int maxY = minY + getTABLE_HEIGHT();
-
-        int ballTop = this.getBallY();
-        int ballBottom = getBallLowerEdge(this);
-        int ballLeft = this.getBallX();
-        int ballRight = getBallRightEdge(this);
-
-        int horizontalDistanceToTravel = 0;
-        if (isBallMovingLeft()) {
-//            left side travel; ball left side X to paddle offset + paddle width
-//            right side travel; table width - (2 * (paddle offset + paddle width))
-             horizontalDistanceToTravel += ballLeft - getPLAYER_PADDLE_X_RIGHT_EDGE();
-             horizontalDistanceToTravel += COMPUTER_PADDLE_X - (PLAYER_PADDLE_X_RIGHT_EDGE + BALL_RADIUS * 2);
-        } else {
-            horizontalDistanceToTravel += COMPUTER_PADDLE_X - ballRight;
-        }
-        if (horizontalDistanceToTravel < 0) {
-            System.out.println("less than 0 horizontal distance should not be possible where interception always occurs");
-            return 0;
-        }
-        System.out.printf("Horizontal distance to travel: %d%n", horizontalDistanceToTravel);
-
-//        X and Y of ball is always changing at same rate
-        int verticalDistanceToTravel = horizontalDistanceToTravel;
-        int maxVerticalDistanceBallCanTravelWithinTable = TABLE_HEIGHT - BALL_RADIUS * 2;
-
-        int verticalDistanceToNextBoundary;
-        if (isBallMovingUp()) {
-            verticalDistanceToNextBoundary = ballTop - minY;
-        } else {
-            verticalDistanceToNextBoundary = maxY - ballBottom;
-        }
-
-//            case where ball will not hit boundary before reaching
-        if (verticalDistanceToNextBoundary > verticalDistanceToTravel) {
-            System.out.println("Ball will not intercept boundary again before interception");
-            if (isBallMovingUp()) {
-                int interceptionCentrePoint = ballTop - verticalDistanceToTravel;
-                System.out.printf("Ball going up, intercept as going up: %d%n", interceptionCentrePoint);
-                return interceptionCentrePoint;
-            } else {
-                int interception = ballBottom + verticalDistanceToTravel;
-                System.out.printf("Ball going down, intercept as going down: %d%n", interception);
-                return interception;
-            }
-        }
-
-        int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
-        int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable;
-        int remainder = verticalDistanceToTravelAfterNextBoundary % maxVerticalDistanceBallCanTravelWithinTable;
-
-        int goingDownInterception = minY + remainder;
-        int goingUpInterception = maxY - remainder;
-        if (numberOfReversals % 2 == 0) {
-            if (isBallMovingUp()) {
-                return goingDownInterception;
-            } else {
-                return goingUpInterception;
-            }
-        } else {
-            if (isBallMovingUp()) {
-                return goingUpInterception;
-            } else {
-                return goingDownInterception;
-            }
-        }
-    }
-
     private static boolean detectCollisionWithBoardEdgesAndGameOver(Pong pong) {
-        int minY = getTABLE_Y();
-        int maxY = minY + getTABLE_HEIGHT();
-        int minX = getTABLE_X();
-        int maxX = getTABLE_X() + getTABLE_WIDTH();
+        int minY = TABLE_Y;
+        int maxY = minY + TABLE_HEIGHT;
+        int minX = TABLE_X;
+        int maxX = TABLE_X + TABLE_WIDTH;
 
         if (pong.getBallY() < minY) {
             System.out.println("Ball collided with top edge of game board");
             pong.setBallY(minY);
             pong.reverseBallYMovement();
         }
-        int ballLowerEdge = getBallLowerEdge(pong);
+        int ballLowerEdge = Utils.getBallLowerEdge(pong);
         if (ballLowerEdge > maxY) {
             System.out.println("Ball collided with bottom edge of game board");
             pong.setBallY(maxY - BALL_RADIUS * 2);
@@ -283,7 +208,7 @@ public class Pong extends JPanel {
                 return false;
             }
         }
-        int ballRightEdge = getBallRightEdge(pong);
+        int ballRightEdge = Utils.getBallRightEdge(pong);
         if (ballRightEdge > maxX) {
             System.out.println("Ball collided with right edge of game board");
             pong.setPlayerScore(pong.getPlayerScore() + 1);
@@ -298,21 +223,13 @@ public class Pong extends JPanel {
         return true;
     }
 
-    private static int getBallRightEdge(Pong pong) {
-        return pong.getBallX() + BALL_RADIUS * 2;
-    }
-
-    private static int getBallLowerEdge(Pong pong) {
-        return pong.getBallY() + BALL_RADIUS * 2;
-    }
-
     private static void detectCollisionWithPaddlesAndCorrect(Pong pong) {
-        if (pong.getBallX() < getPLAYER_PADDLE_X_RIGHT_EDGE() && pong.getBallX() > getPLAYER_PADDLE_X()
+        if (pong.getBallX() < PLAYER_PADDLE_X_RIGHT_EDGE && pong.getBallX() > PLAYER_PADDLE_X
                 && pong.getBallY() > pong.getPlayerPaddleY() && pong.getBallY() < pong.getPlayerPaddleYLowerEdge()) {
             System.out.println("Ball collided with player paddle");
-            pong.setBallX(getPLAYER_PADDLE_X_RIGHT_EDGE());
+            pong.setBallX(PLAYER_PADDLE_X_RIGHT_EDGE);
             pong.reverseBallXMovement();
-            } else if (getBallRightEdge(pong) > COMPUTER_PADDLE_X && getBallRightEdge(pong) < COMPUTER_PADDLE_X + PADDLE_WIDTH
+            } else if (Utils.getBallRightEdge(pong) > COMPUTER_PADDLE_X && Utils.getBallRightEdge(pong) < COMPUTER_PADDLE_X + PADDLE_WIDTH
         && pong.getBallY() > pong.getComputerPaddleY() && pong.getBallY() < pong.getComputerPaddleYLowerEdge()) {
             System.out.println("Ball collided with computer paddle");
             pong.setBallX(COMPUTER_PADDLE_X - BALL_RADIUS * 2);

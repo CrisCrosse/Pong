@@ -52,26 +52,26 @@ public class Utils {
         }
 
         int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
-        int numberOfReversals = verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable;
+        int numberOfReversals = verticalDistanceToTravel / maxVerticalDistanceBallCanTravelWithinTable;
         int remainder = verticalDistanceToTravelAfterNextBoundary % maxVerticalDistanceBallCanTravelWithinTable;
 
-        int goingDownInterception = minY + remainder;
-        int goingUpInterception = maxY - remainder;
+        int goingDownInterception = minY + remainder + pong.getBallRadius();
+        int goingUpInterception = maxY - remainder - pong.getBallRadius();
 
         System.out.printf("%d away from next boundary, %d distance left once ball gets to that boundary, %d more reversals to go and final intercept will be %d distance away from boundary%n",
                 verticalDistanceToNextBoundary, verticalDistanceToTravelAfterNextBoundary, numberOfReversals, remainder);
         // Still do not understand why even reversals so should be same way is actually a downwards oriented interception, should  be other way
         if (numberOfReversals % 2 == 0) {
             if (pong.isBallMovingUp()) {
-                return goingDownInterception;
-            } else {
                 return goingUpInterception;
+            } else {
+                return goingDownInterception;
             }
         } else {
             if (pong.isBallMovingUp()) {
-                return goingUpInterception;
-            } else {
                 return goingDownInterception;
+            } else {
+                return goingUpInterception;
             }
         }
     }

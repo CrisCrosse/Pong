@@ -1,5 +1,10 @@
 package org.example;
 
+import lombok.Builder;
+import lombok.Getter;
+
+@Getter
+@Builder
 public class PongConfig {
     private final int tableX;
     private final int tableY;
@@ -41,48 +46,5 @@ public class PongConfig {
         return new PongConfig(20, 20, 300, 500, 20, 10, 50, 5, 2, 8, 0);
     }
 
-    public int getTableX() {
-        return tableX;
-    }
-
-    public int getTableY() {
-        return tableY;
-    }
-
-    public int getTableHeight() {
-        return tableHeight;
-    }
-
-    public int getTableWidth() {
-        return tableWidth;
-    }
-
-    public int getPaddlesXOffsetFromTableEdge() {
-        return paddlesXOffsetFromTableEdge;
-    }
-
-    public int getPaddleWidth() {
-        return paddleWidth;
-    }
-
-    public int getPaddleHeight() {
-        return paddleHeight;
-    }
-
-    public int getBallRadius() {
-        return ballRadius;
-    }
-
-    public int getBallSpeed() {
-        return ballSpeed;
-    }
-
-    public int getPlayerMoveSpeed() {
-        return playerMoveSpeed;
-    }
-
-    public int getMaxScore() {
-        return maxScore;
-    }
 }
 

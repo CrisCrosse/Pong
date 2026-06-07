@@ -155,20 +155,7 @@ public class Pong extends JPanel {
         return new Dimension(this.tableWidth + 2 * this.tableX, this.tableHeight + 2 * this.tableY);
     }
 
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(Pong::createAndShowGui);
-        while (true) {
-            try {
-//                Loop infinitely and wait for updated state to retrigger game
-                Thread.sleep(100);
-                enterGameLoopIfGameOngoing();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    private static void createAndShowGui() {
+    public static void createAndShowGui() {
         System.out.println("Creating GUI on event dispatching thread");
 //        TODO: have initial menu screen --> set controls and colours, start game
         JFrame frame = new JFrame("Pong Table");
@@ -181,7 +168,7 @@ public class Pong extends JPanel {
         frame.setVisible(true);
     }
 
-    private static void enterGameLoopIfGameOngoing() {
+    public static void enterGameLoopIfGameOngoing() {
         while (isGameOngoing) {
             try {
                 Pong pong = Pong.INSTANCE;

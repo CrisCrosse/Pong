@@ -4,18 +4,15 @@ import javax.swing.*;
 import java.awt.event.ActionEvent;
 import java.beans.PropertyChangeListener;
 
-import static org.example.Pong.MAX_PADDLE_Y;
-import static org.example.Pong.TABLE_Y;
-
 public class MoveAction implements Action {
-    private static final int MOVE_SPEED = 8;
-
     private final Pong pong;
     private final boolean movesUp;
+    private final int moveSpeed;
 
-    MoveAction(Pong pong, boolean movesUp) {
+    MoveAction(Pong pong, boolean movesUp, int moveSpeed) {
         this.pong = pong;
         this.movesUp = movesUp;
+        this.moveSpeed = moveSpeed;
     }
 
     @Override
@@ -46,20 +43,20 @@ public class MoveAction implements Action {
     @Override
     public void actionPerformed(ActionEvent e) {
         int currentY = pong.getPlayerPaddleY();
-        int minYPaddleValue = TABLE_Y;
-        int maxYPaddleValue = MAX_PADDLE_Y;
+        int minYPaddleValue = pong.getTableY();
+        int maxYPaddleValue = pong.getMaxPaddleY();
 
         if (movesUp && currentY > minYPaddleValue) {
-            if (currentY - MOVE_SPEED < minYPaddleValue) {
+            if (currentY - moveSpeed < minYPaddleValue) {
                 pong.setPlayerPaddleY(minYPaddleValue);
             } else {
-                pong.setPlayerPaddleY(currentY - MOVE_SPEED);
+                pong.setPlayerPaddleY(currentY - moveSpeed);
             }
         } else if (!movesUp && currentY < maxYPaddleValue) {
-            if (currentY + MOVE_SPEED > maxYPaddleValue) {
+            if (currentY + moveSpeed > maxYPaddleValue) {
                 pong.setPlayerPaddleY(maxYPaddleValue);
             } else {
-                pong.setPlayerPaddleY(currentY + MOVE_SPEED);
+                pong.setPlayerPaddleY(currentY + moveSpeed);
             }
         }
         pong.repaint();

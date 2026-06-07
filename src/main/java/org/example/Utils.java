@@ -3,18 +3,18 @@ package org.example;
 public class Utils {
 
     public static int getBallRightEdge(Pong pong) {
-        return pong.getBallX() + Pong.BALL_RADIUS * 2;
+        return pong.getBallX() + pong.getBallDiameter();
     }
 
     public static int getBallLowerEdge(Pong pong) {
-        return pong.getBallY() + Pong.BALL_RADIUS * 2;
+        return pong.getBallY() + pong.getBallDiameter();
     }
 
     public static int findBallCentrePointThatInterceptsComputerPaddle(Pong pong) {
 //        assumes player hits the ball otherwise round will reset
 
-        int minY = Pong.TABLE_Y;
-        int maxY = minY + Pong.TABLE_HEIGHT;
+        int minY = pong.getTableY();
+        int maxY = minY + pong.getTableHeight();
 
         int ballTop = pong.getBallY();
         int ballBottom = getBallLowerEdge(pong);
@@ -27,7 +27,7 @@ public class Utils {
 
 //        X and Y of ball is always changing at same rate
         int verticalDistanceToTravel = horizontalDistanceToTravel;
-        int maxVerticalDistanceBallCanTravelWithinTable = Pong.TABLE_HEIGHT - Pong.BALL_RADIUS * 2;
+        int maxVerticalDistanceBallCanTravelWithinTable = pong.getTableHeight() - pong.getBallDiameter();
 
         int verticalDistanceToNextBoundary;
         if (pong.isBallMovingUp()) {
@@ -84,10 +84,10 @@ public class Utils {
         if (pong.isBallMovingLeft()) {
 //            left side travel; ball left side X to paddle offset + paddle width
 //            right side travel; table width - (2 * (paddle offset + paddle width))
-             horizontalDistanceToTravel += ballLeft - Pong.PLAYER_PADDLE_X_RIGHT_EDGE;
-             horizontalDistanceToTravel += Pong.COMPUTER_PADDLE_X - (Pong.PLAYER_PADDLE_X_RIGHT_EDGE + Pong.BALL_RADIUS * 2);
+             horizontalDistanceToTravel += ballLeft - pong.getPlayerPaddleXRightEdge();
+             horizontalDistanceToTravel += pong.getComputerPaddleX() - (pong.getPlayerPaddleXRightEdge() + pong.getBallDiameter());
         } else {
-            horizontalDistanceToTravel += Pong.COMPUTER_PADDLE_X - ballRight;
+            horizontalDistanceToTravel += pong.getComputerPaddleX() - ballRight;
         }
         return horizontalDistanceToTravel;
     }

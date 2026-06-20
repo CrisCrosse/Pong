@@ -52,7 +52,8 @@ public class Utils {
         }
 
         int verticalDistanceToTravelAfterNextBoundary = verticalDistanceToTravel - verticalDistanceToNextBoundary;
-        int numberOfReversals = verticalDistanceToTravel / maxVerticalDistanceBallCanTravelWithinTable;
+        // this number of reversals is wrong, it outputs 0 reversals when you are close to a boundary, despite there being a boundary
+        int numberOfReversals = 1 + (verticalDistanceToTravelAfterNextBoundary / maxVerticalDistanceBallCanTravelWithinTable);
         int remainder = verticalDistanceToTravelAfterNextBoundary % maxVerticalDistanceBallCanTravelWithinTable;
 
         int goingDownInterception = minY + remainder + pong.getBallRadius();

@@ -41,11 +41,11 @@ public class Utils {
         if (verticalDistanceToNextBoundary > verticalDistanceToTravel) {
             System.out.println("Ball will not intercept boundary again before interception");
             if (pong.isBallMovingUp()) {
-                int interceptionCentrePoint = ballTop - verticalDistanceToTravel;
+                int interceptionCentrePoint = ballTop - verticalDistanceToTravel + pong.getBallRadius();
                 System.out.printf("Ball going up, intercept as going up: %d%n", interceptionCentrePoint);
                 return interceptionCentrePoint;
             } else {
-                int interception = ballBottom + verticalDistanceToTravel;
+                int interception = ballBottom + verticalDistanceToTravel - pong.getBallRadius();
                 System.out.printf("Ball going down, intercept as going down: %d%n", interception);
                 return interception;
             }

@@ -53,7 +53,7 @@ public class Pong extends JPanel {
     //    TODO: clean up static vs instance fields. They are effectively the same given singleton instance.
     public static final Pong INSTANCE = new Pong(PongConfig.defaults());
     @Setter
-    private static volatile boolean isGameOngoing = true;
+    private static volatile boolean isGameOngoing = false;
     @Setter
     @Getter
     private int playerPaddleY;
@@ -133,9 +133,12 @@ public class Pong extends JPanel {
         JMenuItem startANewGame = new JMenuItem("Start a new Game");
         startANewGame.addMouseListener(new ResetGameMouseListener(this));
         menu.add(startANewGame);
+//        TODO: add settings -- colour, difficulty.  Add multiplayer
         menu.add(new JMenuItem("Settings"));
         menu.add(new JMenuItem("Multiplayer"));
         this.setComponentPopupMenu(menu);
+        this.getComponentPopupMenu().setVisible(true);
+        this.setMenuGameStatusText("Welcome to Chris' Pong!");
     }
 
     @Override
@@ -157,7 +160,6 @@ public class Pong extends JPanel {
 
     public static void createAndShowGui() {
         System.out.println("Creating GUI on event dispatching thread");
-//        TODO: have initial menu screen --> set controls and colours, start game
         JFrame frame = new JFrame("Pong Table");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 

@@ -185,9 +185,9 @@ public class Pong extends JPanel {
     }
 
     private static boolean moveBall(Pong pong) {
-        pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -pong.getBallSpeed() : pong.getBallSpeed()));
-        pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -pong.getBallSpeed() : pong.getBallSpeed()));
-        //  some inaccuracy because when flips the vertical distance does not change but horizontal distance reduces
+        int ballSpeed = pong.getBallSpeed();
+        pong.setBallX(pong.getBallX() + (pong.isBallMovingLeft() ? -ballSpeed : ballSpeed));
+        pong.setBallY(pong.getBallY() + (pong.isBallMovingUp() ? -ballSpeed : ballSpeed));
         boolean gameOngoing = detectCollisionWithBoardEdgesAndGameOver(pong);
         pong.moveComputerPaddle();
         detectCollisionWithPaddlesAndCorrect(pong);
@@ -222,13 +222,14 @@ public class Pong extends JPanel {
 
         if (pong.getBallY() < minY) {
             System.out.println("Ball collided with top edge of game board");
-            pong.setBallY(minY);
+            // intercept calculations predicated on ball always moving ball speed vertically and horizontally equally
+            pong.setBallY(minY + pong.getBallSpeed());
             pong.reverseBallYMovement();
         }
         int ballLowerEdge = Utils.getBallLowerEdge(pong);
         if (ballLowerEdge > maxY) {
             System.out.println("Ball collided with bottom edge of game board");
-            pong.setBallY(maxY - pong.getBallDiameter());
+            pong.setBallY(maxY - pong.getBallDiameter() - pong.getBallSpeed());
             pong.reverseBallYMovement();
         }
         if (pong.getBallX() < minX) {
